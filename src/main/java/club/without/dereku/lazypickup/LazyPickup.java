@@ -14,7 +14,6 @@ import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.block.Action;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -36,11 +35,6 @@ public final class LazyPickup extends JavaPlugin implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.getAction() == Action.PHYSICAL) {
-            return;
-        }
-
-        if ((event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_AIR)
-                && event.getHand() == EquipmentSlot.OFF_HAND) {
             return;
         }
 
@@ -99,7 +93,7 @@ public final class LazyPickup extends JavaPlugin implements Listener {
             item.remove();
         }
         player.getInventory().addItem(itemStack);
-        player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1.0F, 1.0F);
+        player.playSound(player.getLocation(), Sound.ITEM_PICKUP, 1.0F, 1.0F);
     }
 
     private int canHold(Player player, ItemStack itemStack) {
