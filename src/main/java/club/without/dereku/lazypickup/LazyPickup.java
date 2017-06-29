@@ -58,8 +58,8 @@ public final class LazyPickup extends JavaPlugin implements Listener {
         if (nearbyEntities.isEmpty()) {
             return;
         }
-        final HashSet<Item> nearItems = nearbyEntities.stream().filter(e -> e.getType() == EntityType.DROPPED_ITEM)
-                .map(e -> (Item) e).collect(Collectors.toCollection(HashSet::new));
+        final LinkedList<Item> nearItems = nearbyEntities.stream().filter(e -> e.getType() == EntityType.DROPPED_ITEM)
+                .map(e -> (Item) e).collect(Collectors.toCollection(LinkedList::new));
         if (nearItems.isEmpty()) {
             return;
         }
@@ -68,13 +68,12 @@ public final class LazyPickup extends JavaPlugin implements Listener {
         if (nearItems.size() == 1) {
             targetCandidat = nearItems.stream().findFirst().get();
         } else {
-            LinkedList<Item> items = new LinkedList<>(nearItems);
-            items.sort((o1, o2) -> {
-                final double distance1 = o1.getLocation().distance(player.getLocation());
-                final double distance2 = o2.getLocation().distance(player.getLocation());
+            nearItems.sort((o1, o2) -> {
+                final double distance1 = o1.getLocation().distance(location);
+                final double distance2 = o2.getLocation().distance(location);
                 return Double.compare(distance1, distance2);
             });
-            targetCandidat = items.getFirst();
+            targetCandidat = nearItems.getFirst();
         }
 
         this.proccessPickup(player, targetCandidat);
