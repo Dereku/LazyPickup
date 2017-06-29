@@ -1,4 +1,4 @@
-name: LazyPickup
+name: ${project.name}
 version: ${project.version}
 main: club.without.dereku.lazypickup.LazyPickup
 authors: [Dereku]
