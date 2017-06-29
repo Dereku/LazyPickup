@@ -60,7 +60,7 @@ public final class LazyPickup extends JavaPlugin implements Listener {
 
         Item targetCandidat;
         if (nearItems.size() == 1) {
-            targetCandidat = nearItems.stream().findFirst().get();
+            targetCandidat = nearItems.getFirst();
         } else {
             nearItems.sort((o1, o2) -> {
                 final double distance1 = o1.getLocation().distance(location);
