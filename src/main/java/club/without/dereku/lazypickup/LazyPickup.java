@@ -1,7 +1,6 @@
 package club.without.dereku.lazypickup;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -43,16 +42,22 @@ public final class LazyPickup extends JavaPlugin implements Listener {
         }
 
         final Player player = event.getPlayer();
-        final Block targetBlock = player.getTargetBlock((Set<Material>) null, 8);
+        @SuppressWarnings("deprecation")
+        final Block targetBlock = player.getTargetBlock(null, 8);
         if (targetBlock == null) {
             return;
         }
-        final Location location = targetBlock.getLocation().add(0.5D, 0.5D, 0.5D);
-        final Collection<Entity> nearbyEntities = location.getWorld().getNearbyEntities(location, 0.75D, 0.75D, 0.75D);
+        final Location blockLocation = targetBlock.getLocation().add(0.5D, 0.5D, 0.5D);
+        final Location subtracted = blockLocation.clone().subtract(player.getLocation());
+        final List<Entity> nearbyEntities = player.getNearbyEntities(
+                this.fixRadius(subtracted.getX()), this.fixRadius(subtracted.getY()), this.fixRadius(subtracted.getZ())
+        );
         if (nearbyEntities.isEmpty()) {
             return;
         }
-        final LinkedList<Item> nearItems = nearbyEntities.stream().filter(e -> e.getType() == EntityType.DROPPED_ITEM)
+        final LinkedList<Item> nearItems = nearbyEntities.stream()
+                .filter(e -> e.getType() == EntityType.DROPPED_ITEM)
+                .filter(e -> blockLocation.distance(e.getLocation()) < 1.25D)
                 .map(e -> (Item) e).collect(Collectors.toCollection(LinkedList::new));
         if (nearItems.isEmpty()) {
             return;
@@ -63,8 +68,8 @@ public final class LazyPickup extends JavaPlugin implements Listener {
             targetCandidat = nearItems.getFirst();
         } else {
             nearItems.sort((o1, o2) -> {
-                final double distance1 = o1.getLocation().distance(location);
-                final double distance2 = o2.getLocation().distance(location);
+                final double distance1 = o1.getLocation().distance(blockLocation);
+                final double distance2 = o2.getLocation().distance(blockLocation);
                 return Double.compare(distance1, distance2);
             });
             targetCandidat = nearItems.getFirst();
@@ -78,7 +83,6 @@ public final class LazyPickup extends JavaPlugin implements Listener {
         final int canHold = this.canHold(player, itemStack);
         final int remaining = itemStack.getAmount() - canHold;
         final PlayerPickupItemEvent ppie = new PlayerPickupItemEvent(player, item, remaining);
-        ppie.setCancelled(!player.getCanPickupItems());
         this.getServer().getPluginManager().callEvent(ppie);
         if (ppie.isCancelled()) {
             //TODO: Message?
@@ -93,6 +97,8 @@ public final class LazyPickup extends JavaPlugin implements Listener {
             item.remove();
         }
         player.getInventory().addItem(itemStack);
+        //noinspection deprecation
+        player.updateInventory();
         player.playSound(player.getLocation(), Sound.ITEM_PICKUP, 1.0F, 1.0F);
     }
 
@@ -116,5 +122,9 @@ public final class LazyPickup extends JavaPlugin implements Listener {
         }
 
         return itemStack.getAmount() - remain;
+    }
+
+    private double fixRadius(double d) {
+        return Math.abs(d) * 2D + 0.75D;
     }
 }
