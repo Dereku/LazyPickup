@@ -76,6 +76,10 @@ public final class LazyPickup extends JavaPlugin implements Listener {
             targetCandidat = nearItems.getFirst();
         }
 
+        if (targetCandidat.isGlowing()) {
+            return;
+        }
+        targetCandidat.setGlowing(true);
         this.proccessPickup(player, targetCandidat);
     }
 
@@ -87,14 +91,16 @@ public final class LazyPickup extends JavaPlugin implements Listener {
         ppie.setCancelled(!player.getCanPickupItems());
         this.getServer().getPluginManager().callEvent(ppie);
         if (ppie.isCancelled()) {
-            //TODO: Message?
+            item.setGlowing(false);
             return;
         }
+
         if (remaining > 0) {
             final ItemStack clone = new ItemStack(itemStack);
             clone.setAmount(remaining);
             item.setItemStack(clone);
             itemStack.setAmount(itemStack.getAmount() - remaining);
+            item.setGlowing(false);
         } else {
             item.remove();
         }
