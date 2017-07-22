@@ -75,17 +75,22 @@ public final class LazyPickup extends JavaPlugin implements Listener {
             targetCandidat = nearItems.getFirst();
         }
 
-        this.proccessPickup(player, targetCandidat);
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter
+        synchronized (targetCandidat) {
+            this.proccessPickup(player, targetCandidat);
+        }
     }
 
     private void proccessPickup(Player player, Item item) {
+        if (item.isDead()) {
+            return;
+        }
         final ItemStack itemStack = item.getItemStack();
         final int canHold = this.canHold(player, itemStack);
         final int remaining = itemStack.getAmount() - canHold;
         final PlayerPickupItemEvent ppie = new PlayerPickupItemEvent(player, item, remaining);
         this.getServer().getPluginManager().callEvent(ppie);
         if (ppie.isCancelled()) {
-            //TODO: Message?
             return;
         }
         if (remaining > 0) {
