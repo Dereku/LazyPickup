@@ -23,6 +23,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public final class LazyPickup extends JavaPlugin implements Listener {
+
+    private static final Object LOCK = new Object();
+
     @Override
     public void onEnable() {
         this.getServer().getPluginManager().registerEvents(this, this);
@@ -30,7 +33,7 @@ public final class LazyPickup extends JavaPlugin implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onItemSpawn(ItemSpawnEvent event) {
-        event.getEntity().setPickupDelay(32767);
+        event.getEntity().setPickupDelay(Short.MAX_VALUE);
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -76,8 +79,7 @@ public final class LazyPickup extends JavaPlugin implements Listener {
             targetCandidat = nearItems.getFirst();
         }
 
-        //noinspection SynchronizationOnLocalVariableOrMethodParameter
-        synchronized (targetCandidat) {
+        synchronized (LazyPickup.LOCK) {
             this.proccessPickup(player, targetCandidat);
         }
     }
