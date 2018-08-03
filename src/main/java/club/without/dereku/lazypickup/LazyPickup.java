@@ -9,18 +9,22 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
-import org.bukkit.event.block.Action;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public final class LazyPickup extends JavaPlugin implements Listener {
+
+    private static final Object LOCK = new Object();
+
     @Override
     public void onEnable() {
         this.getServer().getPluginManager().registerEvents(this, this);
@@ -28,7 +32,7 @@ public final class LazyPickup extends JavaPlugin implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onItemSpawn(ItemSpawnEvent event) {
-        event.getEntity().setPickupDelay(32767);
+        event.getEntity().setPickupDelay(Short.MAX_VALUE);
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -42,7 +46,6 @@ public final class LazyPickup extends JavaPlugin implements Listener {
         }
 
         final Player player = event.getPlayer();
-        @SuppressWarnings("deprecation")
         final Block targetBlock = player.getTargetBlock(null, 8);
         if (targetBlock == null) {
             return;
@@ -75,8 +78,7 @@ public final class LazyPickup extends JavaPlugin implements Listener {
             targetCandidat = nearItems.getFirst();
         }
 
-        //noinspection SynchronizationOnLocalVariableOrMethodParameter
-        synchronized (targetCandidat) {
+        synchronized (LazyPickup.LOCK) {
             this.proccessPickup(player, targetCandidat);
         }
     }
